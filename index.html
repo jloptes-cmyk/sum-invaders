@@ -76,9 +76,39 @@
 
     </div>
   </section>
-  
-<script src="./config.js"></script>
+<!-- GAME OVER SCREEN -->
+<section id="gameover-screen" class="screen">
+  <div class="gameover-inner">
+    <h2 class="title">GAME OVER</h2>
 
-  <script src="game.js"></script>
+    <p class="final-score">
+      SCORE: <span id="final-score">0</span>
+    </p>
+
+    <input
+      type="text"
+      id="player-name"
+      maxlength="20"
+      placeholder="YOUR NAME"
+      autocomplete="off"
+    />
+
+    <button id="submit-score-btn">
+      SAVE SCORE
+    </button>
+
+    <h3 class="ranking-title">TOP 10</h3>
+    <ol id="ranking-list"></ol>
+
+    <button id="restart-btn">
+      PLAY AGAIN
+    </button>
+  </div>
+</section>
+ 
+ 
+
+  <script src="./config.js"></script>
+  <script src="./game.js"></script>
 </body>
 </html>
