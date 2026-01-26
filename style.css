@@ -1409,16 +1409,19 @@ z-index: 40;
 }
 
 
-/* --- Leaderboard aligned (use CSS counters instead of <ol> numbering) --- */
-#ranking-list {
-  list-style: none;
+/* --- LEADERBOARD SCREEN (aligned columns) --- */
+#leaderboard-screen { display:none; min-height:100vh; width:100%; align-items:center; justify-content:center; text-align:center; padding:24px; }
+#leaderboard-screen.active { display:flex; }
+
+#leaderboard-list{
+  list-style:none;
   counter-reset: rk;
   margin: 10px 0 0;
   padding-left: 0;
   text-align: left;
 }
 
-#ranking-list li {
+#leaderboard-list li{
   counter-increment: rk;
   display: grid;
   grid-template-columns: 32px 1fr auto auto; /* # | NAME | SCORE | LV */
@@ -1427,12 +1430,12 @@ z-index: 40;
   color: #fff;
 }
 
-#ranking-list li::before {
+#leaderboard-list li::before{
   content: counter(rk) ".";
   opacity: 0.9;
 }
 
-.ranking-head {
+#leaderboard-screen .ranking-head{
   display: grid;
   grid-template-columns: 32px 1fr auto auto;
   gap: 14px;
@@ -1442,14 +1445,50 @@ z-index: 40;
   letter-spacing: 2px;
   opacity: 0.9;
   color: #fff;
+  text-align:left;
 }
 
-.ranking-head span:first-child {
-  visibility: hidden;
+#leaderboard-screen .ranking-head span:first-child{ visibility:hidden; }
+
+#leaderboard-list .rk-score,
+#leaderboard-list .rk-lv{
+  text-align:right;
+  white-space:nowrap;
 }
 
-#ranking-list .rk-score,
-#ranking-list .rk-lv {
-  text-align: right;
-  white-space: nowrap;
+
+/* --- End card save score UI --- */
+.end-save{
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.end-save-label{
+  font-size: 12px;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.end-name{
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.35);
+  color: #fff;
+  outline: none;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.end-save-btn{
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 10px;
 }

@@ -441,6 +441,48 @@ function showEndScreen(mode){
 `;
   }
 
+
+  // Save name + send score, then show leaderboard
+  if (mode === "gameover") {
+    // Add input + button under stats (only on game over)
+    if (statsEl) {
+      statsEl.innerHTML += `
+        <div class="end-save">
+          <div class="end-save-label">YOUR NAME</div>
+          <input id="end-name" class="end-name" type="text" maxlength="20" placeholder="TYPE YOUR NAME" autocomplete="off" />
+          <button id="end-save-btn" class="end-save-btn">SAVE & VIEW TOP 10</button>
+        </div>
+      `;
+    }
+
+    const saveBtn = document.getElementById("end-save-btn");
+    const nameEl  = document.getElementById("end-name");
+
+    if (saveBtn) {
+      saveBtn.onclick = async () => {
+        try {
+          const name = String(nameEl?.value || "").trim().slice(0, 20);
+          if (!name) {
+            if (nameEl) nameEl.focus();
+            return;
+          }
+
+          // submit to Apps Script
+          await submitScore(name, stats.score, stats.levelReached);
+
+          // hide end card, show leaderboard screen
+          hideGameOver();
+          showLeaderboardScreen();
+          await refreshLeaderboard();
+        } catch (e) {
+          console.error(e);
+          saveBtn.textContent = "COULD NOT SAVE";
+          setTimeout(() => (saveBtn.textContent = "SAVE & VIEW TOP 10"), 1200);
+        }
+      };
+    }
+  }
+
   const retryBtn = document.getElementById("end-retry");
   if (retryBtn){
     retryBtn.onclick = async () => {
@@ -974,18 +1016,11 @@ async function showGameOver(score, levels) {
   async function refreshRanking() {
     try {
       const top = await loadTopScores();
-            top.sort((a,b) => (Number(b.levels||0) - Number(a.levels||0)) || (Number(b.score||0) - Number(a.score||0)));
-if (!rankingList) return;
+      if (!rankingList) return;
       rankingList.innerHTML = top
-        .map((r) => `
-          <li>
-            <span class="rk-name">${escapeHtml(r.name)}</span>
-            <span class="rk-score">${r.score}</span>
-            <span class="rk-lv">${r.levels}</span>
-          </li>
-        `)
+        .map((r, i) => `<li>${i + 1}. ${escapeHtml(r.name)} — ${r.score} (LV ${r.levels})</li>`)
         .join("");
-} catch (e) {
+    } catch (e) {
       if (rankingList) rankingList.innerHTML = `<li>Could not load ranking</li>`;
       console.error(e);
     }
@@ -1034,3 +1069,45 @@ function escapeHtml(str) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+
+function showLeaderboardScreen() {
+  // hide other screens
+  document.getElementById("start-screen")?.classList.remove("active");
+  document.getElementById("game-screen")?.classList.remove("active");
+  document.getElementById("gameover-screen")?.classList.remove("active");
+  document.getElementById("leaderboard-screen")?.classList.add("active");
+}
+
+async function refreshLeaderboard() {
+  const list = document.getElementById("leaderboard-list");
+  if (!list) return;
+
+  try {
+    const top = await loadTopScores();
+    top.sort((a,b) => (Number(b.levels||0) - Number(a.levels||0)) || (Number(b.score||0) - Number(a.score||0)));
+
+    list.innerHTML = top.slice(0, 10).map(r => `
+      <li>
+        <span class="rk-name">${escapeHtml(r.name)}</span>
+        <span class="rk-score">${r.score}</span>
+        <span class="rk-lv">${r.levels}</span>
+      </li>
+    `).join("");
+  } catch (e) {
+    console.error(e);
+    list.innerHTML = "<li>Could not load ranking</li>";
+  }
+}
+
+function wireLeaderboardButtons(){
+  const again = document.getElementById("leaderboard-again-btn");
+  if (again){
+    again.onclick = () => {
+      document.getElementById("leaderboard-screen")?.classList.remove("active");
+      document.getElementById("start-screen")?.classList.add("active");
+    };
+  }
+}
+
+document.addEventListener("DOMContentLoaded", wireLeaderboardButtons);

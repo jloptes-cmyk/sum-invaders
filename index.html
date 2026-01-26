@@ -98,14 +98,6 @@
     </button>
 
     <h3 class="ranking-title">TOP 10</h3>
-
-    <div class="ranking-head">
-      <span></span>
-      <span>NAME</span>
-      <span>SCORE</span>
-      <span>LV</span>
-    </div>
-
     <ol id="ranking-list"></ol>
 
     <button id="restart-btn">
@@ -116,7 +108,28 @@
  
  
 
-  <script src="./config.js"></script>
+  
+  <!-- LEADERBOARD SCREEN -->
+  <section id="leaderboard-screen" class="screen">
+    <div class="gameover-inner">
+      <h2 class="title">TOP 10</h2>
+
+      <div class="ranking-head">
+        <span></span>
+        <span>NAME</span>
+        <span>SCORE</span>
+        <span>LV</span>
+      </div>
+
+      <ol id="leaderboard-list"></ol>
+
+      <button id="leaderboard-again-btn">
+        PLAY AGAIN
+      </button>
+    </div>
+  </section>
+
+<script src="./config.js"></script>
   <script src="./game.js"></script>
 </body>
 </html>
