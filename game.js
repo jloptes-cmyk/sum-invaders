@@ -972,7 +972,13 @@ async function showGameOver(score, levels) {
       const top = await loadTopScores();
       if (!rankingList) return;
       rankingList.innerHTML = top
-        .map((r, i) => `<li>${i + 1}. ${escapeHtml(r.name)} — ${r.score} (LV ${r.levels})</li>`)
+        .map((r) => `
+          <li>
+            <span class="rk-name">${escapeHtml(r.name)}</span>
+            <span class="rk-score">${r.score}</span>
+            <span class="rk-lv">${r.levels}</span>
+          </li>
+        `)
         .join("");
     } catch (e) {
       if (rankingList) rankingList.innerHTML = `<li>Could not load ranking</li>`;
