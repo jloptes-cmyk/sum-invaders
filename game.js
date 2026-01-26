@@ -332,6 +332,10 @@ function showCorrectMsg(ms = 2000){
 
   }
 
+  function showGameOver(){
+  console.log("[GAME] GAME OVER");
+  showEndScreen("gameover");
+}
 
   function hideGameOver(){
     if (gameOverEl) gameOverEl.classList.remove("active");
@@ -741,7 +745,7 @@ setTimeout(async () => {
 
       errors += 1;
       renderErr();
-      if (errors >= MAX_ERRORS) { playSfx("hit"); showGameOver(score, levelIndex + 1); return; }
+      if (errors >= MAX_ERRORS) { playSfx("hit"); showGameOver(); return; }
 
       btn.classList.add("wrong","locked");
       btn.disabled = true;
@@ -788,7 +792,7 @@ setTimeout(async () => {
         targetEl.classList.add("blink-hit");
         setTimeout(() => {
           targetEl.classList.remove("blink-hit");
-          showGameOver(score, levelIndex + 1);
+          showGameOver();
         }, 1200);
       }
     }, 1000);
@@ -970,7 +974,8 @@ async function showGameOver(score, levels) {
   async function refreshRanking() {
     try {
       const top = await loadTopScores();
-      if (!rankingList) return;
+            top.sort((a,b) => (Number(b.levels||0) - Number(a.levels||0)) || (Number(b.score||0) - Number(a.score||0))); 
+if (!rankingList) return;
       rankingList.innerHTML = top
         .map((r) => `
           <li>
@@ -980,7 +985,7 @@ async function showGameOver(score, levels) {
           </li>
         `)
         .join("");
-    } catch (e) {
+} catch (e) {
       if (rankingList) rankingList.innerHTML = `<li>Could not load ranking</li>`;
       console.error(e);
     }
