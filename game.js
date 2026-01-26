@@ -974,7 +974,7 @@ async function showGameOver(score, levels) {
   async function refreshRanking() {
     try {
       const top = await loadTopScores();
-            top.sort((a,b) => (Number(b.levels||0) - Number(a.levels||0)) || (Number(b.score||0) - Number(a.score||0))); 
+            top.sort((a,b) => (Number(b.levels||0) - Number(a.levels||0)) || (Number(b.score||0) - Number(a.score||0)));
 if (!rankingList) return;
       rankingList.innerHTML = top
         .map((r) => `

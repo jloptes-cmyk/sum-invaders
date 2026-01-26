@@ -1407,3 +1407,49 @@ z-index: 40;
     height: var(--options-h);
   }
 }
+
+
+/* --- Leaderboard aligned (use CSS counters instead of <ol> numbering) --- */
+#ranking-list {
+  list-style: none;
+  counter-reset: rk;
+  margin: 10px 0 0;
+  padding-left: 0;
+  text-align: left;
+}
+
+#ranking-list li {
+  counter-increment: rk;
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto; /* # | NAME | SCORE | LV */
+  gap: 14px;
+  padding: 2px 0;
+  color: #fff;
+}
+
+#ranking-list li::before {
+  content: counter(rk) ".";
+  opacity: 0.9;
+}
+
+.ranking-head {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto;
+  gap: 14px;
+  padding: 6px 0 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  font-size: 12px;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  color: #fff;
+}
+
+.ranking-head span:first-child {
+  visibility: hidden;
+}
+
+#ranking-list .rk-score,
+#ranking-list .rk-lv {
+  text-align: right;
+  white-space: nowrap;
+}
