@@ -332,10 +332,6 @@ function showCorrectMsg(ms = 2000){
 
   }
 
-  function showGameOver(){
-  console.log("[GAME] GAME OVER");
-  showEndScreen("gameover");
-}
 
   function hideGameOver(){
     if (gameOverEl) gameOverEl.classList.remove("active");
@@ -745,7 +741,7 @@ setTimeout(async () => {
 
       errors += 1;
       renderErr();
-      if (errors >= MAX_ERRORS) { playSfx("hit"); showGameOver(); return; }
+      if (errors >= MAX_ERRORS) { playSfx("hit"); showGameOver(score, levelIndex + 1); return; }
 
       btn.classList.add("wrong","locked");
       btn.disabled = true;
@@ -792,7 +788,7 @@ setTimeout(async () => {
         targetEl.classList.add("blink-hit");
         setTimeout(() => {
           targetEl.classList.remove("blink-hit");
-          showGameOver();
+          showGameOver(score, levelIndex + 1);
         }, 1200);
       }
     }, 1000);
@@ -926,3 +922,104 @@ setTimeout(async () => {
   showScreen(startScreen);
   console.log("[BOOT] OK");
 });
+
+async function submitScore(name, score, levels) {
+  const url = window.SCORES_API_URL;
+  if (!url) throw new Error("SCORES_API_URL missing (config.js not loaded)");
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // Apps Script va mejor así
+    body: JSON.stringify({ name, score, levels })
+  });
+
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "Submit failed");
+  return data;
+}
+
+async function loadTopScores() {
+  const url = window.SCORES_API_URL;
+  if (!url) throw new Error("SCORES_API_URL missing");
+
+  const res = await fetch(url); // GET
+  const data = await res.json();
+  if (!data.ok) throw new Error("Failed to load scores");
+  return data.top || [];
+}
+
+async function showGameOver(score, levels) {
+  // Actualiza texto de score final
+  const finalScoreEl = document.getElementById("final-score");
+  if (finalScoreEl) finalScoreEl.textContent = String(score);
+
+  // Cambia a pantalla GAME OVER
+  document.getElementById("start-screen")?.classList.remove("active");
+  document.getElementById("game-screen")?.classList.remove("active");
+  document.getElementById("gameover-screen")?.classList.add("active");
+
+  // Helpers UI
+  const nameInput = document.getElementById("player-name");
+  const submitBtn = document.getElementById("submit-score-btn");
+  const rankingList = document.getElementById("ranking-list");
+  const restartBtn = document.getElementById("restart-btn");
+
+  if (nameInput) nameInput.value = "";
+
+  // Cargar ranking
+  async function refreshRanking() {
+    try {
+      const top = await loadTopScores();
+      if (!rankingList) return;
+      rankingList.innerHTML = top
+        .map((r, i) => `<li>${i + 1}. ${escapeHtml(r.name)} — ${r.score} (LV ${r.levels})</li>`)
+        .join("");
+    } catch (e) {
+      if (rankingList) rankingList.innerHTML = `<li>Could not load ranking</li>`;
+      console.error(e);
+    }
+  }
+
+  // Guardar score
+  if (submitBtn) {
+    submitBtn.onclick = async () => {
+      const name = (nameInput?.value || "").trim();
+      if (!name) {
+        alert("Please enter your name");
+        return;
+      }
+      submitBtn.disabled = true;
+      try {
+        await submitScore(name, score, levels);
+        await refreshRanking();
+        if (nameInput) nameInput.value = "";
+      } catch (e) {
+        alert("Could not save score");
+        console.error(e);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    };
+  }
+
+  // Restart
+  if (restartBtn) {
+    restartBtn.onclick = () => {
+      document.getElementById("gameover-screen")?.classList.remove("active");
+      document.getElementById("start-screen")?.classList.add("active");
+    };
+  }
+
+  // Primera carga del ranking
+  await refreshRanking();
+}
+
+// Pequeña función para evitar inyección HTML en nombres
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
