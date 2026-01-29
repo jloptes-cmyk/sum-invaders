@@ -1492,3 +1492,7 @@ z-index: 40;
   cursor: pointer;
   border-radius: 10px;
 }
+
+
+/* --- Start screen: TOP 10 button spacing --- */
+#top10-btn{ margin-top: 12px; }

@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const insertCoin  = document.getElementById("insert-coin");
   const startBtn    = document.getElementById("start-btn");
+  const top10Btn    = document.getElementById("top10-btn");
 
   const countdownEl = document.getElementById("countdown");
   const gameUi      = document.getElementById("game-ui");
@@ -612,11 +613,12 @@ function getStepTopPx(stepIndex){
   function buildOptions(target, count){
   const opts = [];
 
-  // Reglas:
-  // - Mismo nº de cifras por opción (según target, ajustado si no es viable)
-  // - Sin ceros a la izquierda (dígito inicial nunca 0)
-  // - Ningún número puede terminar en 0 (ni target ni addendos)
-  // - Generamos falsas "cerca" del target para que no canten
+  // Anti-hack (unidades):
+  // - 2 opciones (incluida la correcta) comparten la misma unidad que el target
+  // - 2 opciones son "cercanas" (±10% a ±20%) pero con unidades distintas
+  // Reglas extra:
+  // - Ningún número termina en 0 (target ya lo evitamos fuera; aquí evitamos addendos y resultados)
+  // - Mantenemos el mismo nº de cifras de los addendos según el target (ajustando si no es viable)
 
   const endsWithZero = (n) => (Math.abs(n) % 10) === 0;
 
@@ -629,19 +631,25 @@ function getStepTopPx(stepIndex){
     d -= 1;
   }
 
-  // Para 1 dígito: evitamos el 0 (porque termina en 0)
   const minAdd = (d === 1) ? 1 : Math.pow(10, d - 1);
   const maxAdd = Math.pow(10, d) - 1;
 
-  function tryPickCorrect(){
+  const minSum = 2 * minAdd;
+  const maxSum = 2 * maxAdd;
+
+  function makePairForSum(sum){
+    if (!Number.isFinite(sum)) return null;
+    if (sum < minSum || sum > maxSum) return null;
+    if (endsWithZero(sum)) return null;
+
+    // Intentos: a y b dentro de rango y sin acabar en 0
     const aMin = minAdd;
-    const aMax = Math.min(maxAdd, target - minAdd);
+    const aMax = Math.min(maxAdd, sum - minAdd);
     if (aMax < aMin) return null;
 
-    // Intentos para cumplir "no termina en 0" en ambos
-    for (let k = 0; k < 300; k++){
+    for (let k = 0; k < 400; k++){
       const a = Math.floor(Math.random() * (aMax - aMin + 1)) + aMin;
-      const b = target - a;
+      const b = sum - a;
       if (b < minAdd || b > maxAdd) continue;
       if (endsWithZero(a) || endsWithZero(b)) continue;
       return { a, b };
@@ -649,51 +657,80 @@ function getStepTopPx(stepIndex){
     return null;
   }
 
-  function tryPickFallback(){
-    // Para targets muy pequeños, bajamos a 1 dígito "limpio"
-    // pero seguimos evitando que termine en 0.
-    for (let k = 0; k < 200; k++){
-      const aa = Math.floor(Math.random() * 9) + 1; // 1..9
-      const bb = target - aa;
-      if (bb < 1 || bb > 9) continue;
-      if (endsWithZero(aa) || endsWithZero(bb)) continue;
-      return { a: aa, b: bb };
-    }
-    // Último recurso (matemáticamente raro), pero no debería ocurrir si evitamos targets < 2
-    return { a: 1, b: Math.max(1, target - 1) };
+  // 1) Correcta
+  const corrPair = makePairForSum(target);
+  if (!corrPair){
+    // fallback raro (no debería ocurrir si target se genera bien)
+    const fb = { a: minAdd, b: Math.max(minAdd, target - minAdd) };
+    opts.push({ isCorrect: true, text: formatSum(fb.a, fb.b) });
+  } else {
+    opts.push({ isCorrect: true, text: formatSum(corrPair.a, corrPair.b) });
   }
-
-  const corr = tryPickCorrect() || tryPickFallback();
-  opts.push({ isCorrect: true, text: formatSum(corr.a, corr.b) });
 
   const used = new Set([opts[0].text]);
+  const usedSums = new Set([target]);
 
-  // Falsas
-  while (opts.length < count){
-    // addendo A sin terminar en 0
-    let fa = null;
-    for (let k = 0; k < 80; k++){
-      const cand = Math.floor(Math.random() * (maxAdd - minAdd + 1)) + minAdd;
-      if (!endsWithZero(cand)) { fa = cand; break; }
-    }
-    if (fa === null) continue;
+  const targetUnit = Math.abs(target) % 10;
 
-    // delta pequeño para que parezca plausible, sin ser correcta
-    const delta = (Math.floor(Math.random() * 41) - 20) || 7; // [-20..20] nunca 0
-    const fb = (target - fa) + delta;
-
-    if (fb < minAdd || fb > maxAdd) continue;
-    if (fa + fb === target) continue;
-    if (endsWithZero(fa) || endsWithZero(fb)) continue;
-
-    const t = formatSum(fa, fb);
-    if (used.has(t)) continue;
-
+  // Helpers para crear sumas falsas con restricciones
+  function pushOption(sum, isCorrect){
+    const pair = makePairForSum(sum);
+    if (!pair) return false;
+    const t = formatSum(pair.a, pair.b);
+    if (used.has(t)) return false;
     used.add(t);
-    opts.push({ isCorrect: false, text: t });
+    usedSums.add(sum);
+    opts.push({ isCorrect, text: t });
+    return true;
   }
 
-  // Mezclar
+  // 2) Una falsa que comparta unidades (target +/- 10/20/30/40)
+  const sameUnitDeltas = [10, -10, 20, -20, 30, -30, 40, -40];
+  for (let k = 0; k < 300; k++){
+    const delta = sameUnitDeltas[Math.floor(Math.random() * sameUnitDeltas.length)];
+    const sum = target + delta;
+    if (usedSums.has(sum)) continue;
+    if ((Math.abs(sum) % 10) !== targetUnit) continue; // seguridad
+    if (pushOption(sum, false)) break;
+  }
+
+  // 3) y 4) Dos falsas cercanas (±10% a ±20%), unidades distintas
+  const pcts = [0.10, 0.12, 0.15, 0.18, 0.20];
+
+  function nearSum(){
+    const pct = pcts[Math.floor(Math.random() * pcts.length)];
+    const sign = (Math.random() < 0.5) ? -1 : 1;
+    const delta = Math.max(1, Math.round(Math.abs(target) * pct)) * sign;
+    return target + delta;
+  }
+
+  let guard = 0;
+  while (opts.length < count && guard++ < 4000){
+    const sum = nearSum();
+    if (usedSums.has(sum)) continue;
+    if (sum < minSum || sum > maxSum) continue;
+    if (endsWithZero(sum)) continue;
+    // clave: que NO coincida en unidades
+    if ((Math.abs(sum) % 10) === targetUnit) continue;
+
+    if (pushOption(sum, false)) continue;
+  }
+
+  // Si por algún motivo no llegamos a count, rellenamos con deltas de 10 en 10 (mismo unidades)
+  // (muy raro, pero evita quedarnos cortos)
+  if (opts.length < count){
+    for (let delta = -90; delta <= 90 && opts.length < count; delta += 10){
+      if (delta === 0) continue;
+      const sum = target + delta;
+      if (usedSums.has(sum)) continue;
+      if ((Math.abs(sum) % 10) === 0) continue;
+      pushOption(sum, false);
+    }
+  }
+
+  // Recortar por si acaso y mezclar
+  while (opts.length > count) opts.pop();
+
   for (let i = opts.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
     [opts[i], opts[j]] = [opts[j], opts[i]];
@@ -940,6 +977,14 @@ setTimeout(async () => {
 
     await startRun();
   });
+
+  // TOP 10 desde la pantalla inicial
+  if (top10Btn){
+    top10Btn.addEventListener("click", async () => {
+      showLeaderboardScreen();
+      try{ await refreshLeaderboard(); }catch(e){ console.error(e); }
+    });
+  }
 
   // Enter: Start / Restart
   window.addEventListener("keydown", async (e) => {
