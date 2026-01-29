@@ -80,12 +80,12 @@ button{
   font-size: 22px;
   letter-spacing: 2px;
 }
-#start-btn.disabled{
+.start-btn.disabled{
   opacity: 0.25;
   pointer-events: none;
   filter: grayscale(1);
 }
-#start-btn.ready{
+.start-btn.ready{
   opacity: 1;
   pointer-events: auto;
   border-color: var(--tron-red);
@@ -799,12 +799,12 @@ button{
   font-size: 22px;
   letter-spacing: 2px;
 }
-#start-btn.disabled{
+.start-btn.disabled{
   opacity: 0.25;
   pointer-events: none;
   filter: grayscale(1);
 }
-#start-btn.ready{
+.start-btn.ready{
   opacity: 1;
   pointer-events: auto;
   border-color: var(--tron-red);
@@ -1496,3 +1496,62 @@ z-index: 40;
 
 /* --- Start screen: TOP 10 button spacing --- */
 #top10-btn{ margin-top: 12px; }
+
+
+
+/* =========================================================
+   APP SHELL: Desktop shows a centered "mobile-like" frame
+   ========================================================= */
+.app-shell{
+  width: 100vw;
+  height: 100dvh;
+}
+
+/* Make screens fill the shell, not the whole viewport */
+.app-shell .screen{
+  width: 100%;
+  height: 100%;
+}
+
+/* Game layout should use shell height when inside the frame */
+.app-shell #game-screen{
+  width: 100%;
+  height: 100%;
+}
+.app-shell .play-area{
+  height: calc(100% - var(--options-h));
+}
+.app-shell .options{
+  height: var(--options-h);
+}
+
+/* Desktop frame */
+@media (min-width: 900px){
+  body{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0b0f18;
+    overflow: hidden;
+  }
+
+  .app-shell{
+    /* Phone-ish frame */
+    width: 430px;
+    height: min(92vh, 920px);
+    border-radius: 18px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.12);
+    box-shadow: 0 14px 60px rgba(0,0,0,0.65);
+    background: var(--bg);
+
+    /* IMPORTANT: options area becomes % of the frame */
+    --options-h: 30%;
+  }
+
+  /* Ensure the active screen doesn't try to size itself */
+  .app-shell .screen.active{
+    width: 100%;
+    height: 100%;
+  }
+}
