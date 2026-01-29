@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const insertCoin  = document.getElementById("insert-coin");
   const startBtn    = document.getElementById("start-btn");
 
+  const top10Btn   = document.getElementById("top10-btn");
   const countdownEl = document.getElementById("countdown");
   const gameUi      = document.getElementById("game-ui");
 
@@ -183,6 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const click = (vol=0.10, dur=0.018) => playClick(vol, dur);
 
     switch(n){
+      case "click":
+      case "ui": {
+        // light UI click
+        click(0.12, 0.016);
+        break;
+      }
       case "coin": {
         // Classic double-beep + light click
         click(0.14, 0.014);
@@ -940,6 +947,31 @@ setTimeout(async () => {
 
     await startRun();
   });
+
+
+  // TOP 10: open leaderboard (works from START screen)
+  if (top10Btn){
+    top10Btn.addEventListener("click", async () => {
+      // Optional sound (reuse "start" feel but softer)
+      try{ playSfx("click"); }catch(e){}
+      showLeaderboardScreen();
+
+      // If opened as file://, many browsers block fetch/CORS → show friendly message
+      const isFile = (location && location.protocol === "file:");
+      const list = document.getElementById("leaderboard-list");
+      if (isFile && list){
+        list.innerHTML = "<li>To load TOP 10, open this game via GitHub Pages or a local server (not file://).</li>";
+        return;
+      }
+
+      try{
+        await refreshLeaderboard();
+      }catch(e){
+        console.error(e);
+        if (list) list.innerHTML = "<li>Could not load ranking</li>";
+      }
+    });
+  }
 
   // Enter: Start / Restart
   window.addEventListener("keydown", async (e) => {
