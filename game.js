@@ -461,9 +461,21 @@ function showEndScreen(mode){
 
     if (saveBtn) {
       saveBtn.onclick = async () => {
+        // Guard: avoid double submits (double click / double tap / lag)
+        if (scoreSubmitted) return;
+        scoreSubmitted = true;
+
+        // Lock button immediately
+        saveBtn.disabled = true;
+        const prevText = saveBtn.textContent;
+        saveBtn.textContent = "SAVING...";
+
         try {
           const name = String(nameEl?.value || "").trim().slice(0, 20);
           if (!name) {
+            scoreSubmitted = false;
+            saveBtn.disabled = false;
+            saveBtn.textContent = prevText;
             if (nameEl) nameEl.focus();
             return;
           }
@@ -477,8 +489,10 @@ function showEndScreen(mode){
           await refreshLeaderboard();
         } catch (e) {
           console.error(e);
+          scoreSubmitted = false;
+          saveBtn.disabled = false;
           saveBtn.textContent = "COULD NOT SAVE";
-          setTimeout(() => (saveBtn.textContent = "SAVE & VIEW TOP 10"), 1200);
+          setTimeout(() => (saveBtn.textContent = prevText), 1200);
         }
       };
     }
@@ -507,6 +521,9 @@ function showEndScreen(mode){
 
   let coinInserted = false;
   let turnActive = false;
+
+  // Prevent duplicate score submissions (double click / touch / lag)
+  let scoreSubmitted = false;
 
   let score = 0;
   let errors = 0;
@@ -903,6 +920,9 @@ setTimeout(async () => {
     hideVictory();
     stopStepTimer();
     turnActive = false;
+
+    // allow saving score once per run
+    scoreSubmitted = false;
   }
 
   function nextTurn(){
@@ -1061,6 +1081,9 @@ async function showGameOver(score, levels) {
 
   if (nameInput) nameInput.value = "";
 
+  // Guard against double submits (legacy screen)
+  let legacyScoreSubmitted = false;
+
   // Cargar ranking
   async function refreshRanking() {
     try {
@@ -1078,17 +1101,24 @@ async function showGameOver(score, levels) {
   // Guardar score
   if (submitBtn) {
     submitBtn.onclick = async () => {
+      // Guard: avoid double submits
+      if (legacyScoreSubmitted) return;
+      legacyScoreSubmitted = true;
+
       const name = (nameInput?.value || "").trim();
       if (!name) {
+        legacyScoreSubmitted = false;
         alert("Please enter your name");
         return;
       }
+
       submitBtn.disabled = true;
       try {
         await submitScore(name, score, levels);
         await refreshRanking();
         if (nameInput) nameInput.value = "";
       } catch (e) {
+        legacyScoreSubmitted = false;
         alert("Could not save score");
         console.error(e);
       } finally {
