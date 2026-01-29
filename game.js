@@ -959,8 +959,12 @@ setTimeout(async () => {
 
   // Estado inicial
   disableStart();
-
-  insertCoin.addEventListener("click", () => {
+  // TOP 10 must be clickable even before INSERT COIN
+  if (top10Btn){
+    top10Btn.disabled = false;
+    top10Btn.classList.remove("disabled");
+  }
+insertCoin.addEventListener("click", () => {
     if (coinInserted) return;
     coinInserted = true;
 

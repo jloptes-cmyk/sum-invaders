@@ -80,12 +80,12 @@ button{
   font-size: 22px;
   letter-spacing: 2px;
 }
-.start-btn.disabled{
+#start-btn.disabled{
   opacity: 0.25;
   pointer-events: none;
   filter: grayscale(1);
 }
-.start-btn.ready{
+#start-btn.ready{
   opacity: 1;
   pointer-events: auto;
   border-color: var(--tron-red);
@@ -799,12 +799,12 @@ button{
   font-size: 22px;
   letter-spacing: 2px;
 }
-.start-btn.disabled{
+#start-btn.disabled{
   opacity: 0.25;
   pointer-events: none;
   filter: grayscale(1);
 }
-.start-btn.ready{
+#start-btn.ready{
   opacity: 1;
   pointer-events: auto;
   border-color: var(--tron-red);
