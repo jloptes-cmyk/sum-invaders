@@ -31,8 +31,8 @@ button{
 /* --- screens --- */
 .screen{
   display: none;
-  height: 100%;
-  width: 100%;
+  height: 100dvh;
+  width: 100vw;
 }
 .screen.active{
   display: flex;
@@ -79,16 +79,13 @@ button{
   color: var(--ui);
   font-size: 22px;
   letter-spacing: 2px;
-
-  display: block;
-  margin: 0 auto;
 }
-.start-btn.disabled{
+#start-btn.disabled{
   opacity: 0.25;
   pointer-events: none;
   filter: grayscale(1);
 }
-.start-btn.ready{
+#start-btn.ready{
   opacity: 1;
   pointer-events: auto;
   border-color: var(--tron-red);
@@ -152,7 +149,7 @@ button{
   font-weight: 700;
   letter-spacing: 2px;
   /* tamaño grande y responsivo */
-  font-size: clamp(56px, min(10vw, 10vh), 120px);
+  font-size: clamp(56px, 10vw, 120px);
   line-height: 1;
   padding: 4px 8px;
   user-select: none;
@@ -268,7 +265,7 @@ body{
   z-index: 999;
   font-weight: 700;
   letter-spacing: 3px;
-  font-size: clamp(48px, min(12vw, 12vh), 120px);
+  font-size: clamp(48px, 12vw, 120px);
   color: var(--tron-red);
   text-shadow:
     0 0 6px rgba(255, 0, 43, 0.85),
@@ -753,8 +750,8 @@ button{
 /* --- screens --- */
 .screen{
   display: none;
-  height: 100%;
-  width: 100%;
+  height: 100dvh;
+  width: 100vw;
 }
 .screen.active{
   display: flex;
@@ -802,12 +799,12 @@ button{
   font-size: 22px;
   letter-spacing: 2px;
 }
-.start-btn.disabled{
+#start-btn.disabled{
   opacity: 0.25;
   pointer-events: none;
   filter: grayscale(1);
 }
-.start-btn.ready{
+#start-btn.ready{
   opacity: 1;
   pointer-events: auto;
   border-color: var(--tron-red);
@@ -871,7 +868,7 @@ button{
   font-weight: 700;
   letter-spacing: 2px;
   /* tamaño grande y responsivo */
-  font-size: clamp(56px, min(10vw, 10vh), 120px);
+  font-size: clamp(56px, 10vw, 120px);
   line-height: 1;
   padding: 4px 8px;
   user-select: none;
@@ -987,7 +984,7 @@ body{
   z-index: 999;
   font-weight: 700;
   letter-spacing: 3px;
-  font-size: clamp(48px, min(12vw, 12vh), 120px);
+  font-size: clamp(48px, 12vw, 120px);
   color: var(--tron-red);
   text-shadow:
     0 0 6px rgba(255, 0, 43, 0.85),
@@ -1411,45 +1408,91 @@ z-index: 40;
   }
 }
 
-#top10-btn{ margin-top: 14px; }
+
+/* --- LEADERBOARD SCREEN (aligned columns) --- */
+#leaderboard-screen { display:none; min-height:100vh; width:100%; align-items:center; justify-content:center; text-align:center; padding:24px; }
+#leaderboard-screen.active { display:flex; }
+
+#leaderboard-list{
+  list-style:none;
+  counter-reset: rk;
+  margin: 10px 0 0;
+  padding-left: 0;
+  text-align: left;
+}
+
+#leaderboard-list li{
+  counter-increment: rk;
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto; /* # | NAME | SCORE | LV */
+  gap: 14px;
+  padding: 2px 0;
+  color: #fff;
+}
+
+#leaderboard-list li::before{
+  content: counter(rk) ".";
+  opacity: 0.9;
+}
+
+#leaderboard-screen .ranking-head{
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto;
+  gap: 14px;
+  padding: 6px 0 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  font-size: 12px;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  color: #fff;
+  text-align:left;
+}
+
+#leaderboard-screen .ranking-head span:first-child{ visibility:hidden; }
+
+#leaderboard-list .rk-score,
+#leaderboard-list .rk-lv{
+  text-align:right;
+  white-space:nowrap;
+}
 
 
-/* --- Desktop: show the game in a mobile-like frame (so numbers don't go huge) --- */
-#app{
+/* --- End card save score UI --- */
+.end-save{
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.end-save-label{
+  font-size: 12px;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.end-name{
   width: 100%;
-  height: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.35);
+  color: #fff;
+  outline: none;
+  border-radius: 10px;
+  text-transform: uppercase;
 }
 
-/* Use percentage-based options height inside the app frame */
-#app{
-  --options-h: 30%;
+.end-save-btn{
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 10px;
 }
 
-@media (min-width: 900px){
-  body{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(closest-side, rgba(255,0,43,0.10), rgba(0,0,0,1) 70%);
-  }
-  #app{
-    width: 430px;         /* phone-ish width */
-    height: min(860px, 92vh);
-    border-radius: 22px;
-    box-shadow:
-      0 0 0 3px rgba(255,255,255,0.20),
-      0 0 32px rgba(255,0,43,0.12);
-    overflow: hidden;
-    background: #000;
-  }
-  /* keep overlay within the frame */
-  .countdown{
-    position: absolute;
-  }
-}
 
-@media (max-width: 899px){
-  :root{ --options-h: 30dvh; }
-}
-
+/* --- Start screen: TOP 10 button spacing --- */
+#top10-btn{ margin-top: 12px; }
