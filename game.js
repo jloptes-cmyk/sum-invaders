@@ -939,14 +939,14 @@ setTimeout(async () => {
     enableStart();
   });
 
-  startBtn.addEventListener("click", async () => {
-    if (!coinInserted) return;
+ startBtn.addEventListener("click", async () => {
+  coinInserted = true;
 
-    playSfx("start");
-    showScreen(gameScreen);
+  playSfx("start");
+  showScreen(gameScreen);
 
-    await startRun();
-  });
+  await startRun();
+});
 
 
   // TOP 10: open leaderboard (works from START screen)
