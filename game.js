@@ -928,10 +928,10 @@ setTimeout(async () => {
   }
 
   // Estado inicial
-  disableStart();
+  enableStart();
 
   insertCoin.addEventListener("click", () => {
-    if (coinInserted) return;
+   // if (coinInserted) return;
     coinInserted = true;
 
     playSfx("coin");
